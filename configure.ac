@@ -80,6 +80,7 @@ case "$host_os" in
 esac
 
 source_date_iso=
+dot_export="# export"
 if test -n "$SOURCE_DATE_EPOCH"; then
   # SOURCE_DATE_EPOCH must be either unset or numeric.
   test -z "`echo "$SOURCE_DATE_EPOCH" | sed -e 's,^$,X,' -e 's,[[0-9]],,g'`" \
@@ -97,9 +98,23 @@ if test -n "$SOURCE_DATE_EPOCH"; then
     cmd="unknown"
   done
   AC_MSG_RESULT([$cmd])
+
+  AC_MSG_CHECKING([how ${MAKE-make} exports environment variables])
+  dot_export=
+  #          GNU make BSD make
+  for exp in "export" ".export"; do
+    printf 'X=42\n%s X\nall:\n\ttest "$(X)" = "$$X"\n' "$exp" > conftest.make
+    if (unset X && ${MAKE-make} -f conftest.make >/dev/null 2>&1); then
+      dot_export=$exp; break
+    fi
+  done
+  rm -f conftest.make
+  AC_MSG_RESULT([${dot_export:-unknown}])
+  test -n "$dot_export" || dot_export="# unknown export"
 fi
 AC_SUBST([SOURCE_DATE_EPOCH])
 AC_SUBST([source_date_iso])
+AC_SUBST([dot_export])
 AM_CONDITIONAL(REPRODUCIBLE_BUILD, [test -n "$SOURCE_DATE_EPOCH"])
 
 # Checks for header files.
@@ -1158,6 +1173,14 @@ case $objcopy_deterministic in
   :*) AC_MSG_WARN([
 The installed static library will not be reproducible because 'objcopy -D'
 is not available.
+]) ;;
+esac
+
+case $dot_export in
+  *unknown*) AC_MSG_WARN([
+This script was unable to determine how '${MAKE-make}' exports environment variables.
+Use 'export SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH' before running '${MAKE-make}'.
+Please inform $PACKAGE_BUGREPORT - Thanks!
 ]) ;;
 esac
 

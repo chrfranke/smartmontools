@@ -146,10 +146,10 @@ jobs:
           tar -xf "$distfile" &&
           version_sh=$("${distfile%.tar.gz}/src/getversion.sh" -s) && eval "${version_sh}" &&
           cd smartmontools-${SMARTMONTOOLS_PKG_VER} && mkdir build && cd build &&
-          export SOURCE_DATE_EPOCH=$((SMARTMONTOOLS_GIT_REV_EPOCH + 1)) &&
           ../configure --with-build-info='(GHA/clang/${{ github.event.inputs.suffix }})' \
             CC=clang CXX=clang++ \
-            ${{ github.event.inputs.cfg-options }} &&
+            ${{ github.event.inputs.cfg-options }} \
+            SOURCE_DATE_EPOCH=$((SMARTMONTOOLS_GIT_REV_EPOCH + 1)) &&
           ../src/clang-scan-build.sh \
             -f "../../smartmontools-ubuntu-x86_64-clang-report-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz" \
             make ${{ github.event.inputs.make-options }} &&
@@ -191,10 +191,10 @@ jobs:
           tar -xf "$distfile" &&
           version_sh=$("${distfile%.tar.gz}/src/getversion.sh" -s) && eval "${version_sh}" &&
           cd smartmontools-${SMARTMONTOOLS_PKG_VER} && mkdir build && cd build &&
-          export SOURCE_DATE_EPOCH=$((SMARTMONTOOLS_GIT_REV_EPOCH + 1)) &&
           ../configure --with-build-info='(GHA/clang/${{ github.event.inputs.suffix }})' \
             CC=clang CXX=clang++ \
-            ${{ github.event.inputs.cfg-options }} &&
+            ${{ github.event.inputs.cfg-options }} \
+            SOURCE_DATE_EPOCH=$((SMARTMONTOOLS_GIT_REV_EPOCH + 1)) &&
           ../src/clang-scan-build.sh \
             -f "../../smartmontools-ubuntu-arm64-clang-report-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz" \
             make ${{ github.event.inputs.make-options }} &&

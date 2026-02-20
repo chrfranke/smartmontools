@@ -4,8 +4,10 @@
 #
 
 if REPRODUCIBLE_BUILD
+@dot_export@ SOURCE_DATE_EPOCH
 if OS_DARWIN
-export ZERO_AR_DATE := 1
+ZERO_AR_DATE = 1
+@dot_export@ ZERO_AR_DATE
 endif
 endif
 

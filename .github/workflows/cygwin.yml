@@ -44,8 +44,8 @@ jobs:
       - name: Build with x86_64 gcc
         run: |
           mkdir build-gcc && cd build-gcc &&
-          export SOURCE_DATE_EPOCH=$((SMARTMONTOOLS_GIT_REV_EPOCH + 1)) &&
-          ../configure --with-build-info='(GHA/Cygwin)' &&
+          ../configure --with-build-info='(GHA/Cygwin)' \
+            SOURCE_DATE_EPOCH=$((SMARTMONTOOLS_GIT_REV_EPOCH + 1)) &&
           make -j && make check &&
           make bin-dist bin_distfile="smartmontools-cygwin-x86_64-gcc-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz"
         shell: bash --noprofile --norc -e -o igncr '{0}'
@@ -60,8 +60,8 @@ jobs:
       - name: Build with x86_64 clang
         run: |
           mkdir build-clang && cd build-clang &&
-          export SOURCE_DATE_EPOCH=$((SMARTMONTOOLS_GIT_REV_EPOCH + 1)) &&
-          ../configure --with-build-info='(GHA/Cygwin)' CC=clang CXX=clang++ &&
+          ../configure --with-build-info='(GHA/Cygwin)' CC=clang CXX=clang++ \
+            SOURCE_DATE_EPOCH=$((SMARTMONTOOLS_GIT_REV_EPOCH + 1)) &&
           ../src/clang-scan-build.sh \
             -f "smartmontools-cygwin-clang-report-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz" \
             make -j &&

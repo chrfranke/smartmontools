@@ -4,9 +4,10 @@
 #
 
 if REPRODUCIBLE_BUILD
-set_source_date_epoch = SOURCE_DATE_EPOCH=$(SOURCE_DATE_EPOCH)
+@dot_export@ SOURCE_DATE_EPOCH
 if OS_DARWIN
-export ZERO_AR_DATE := 1
+ZERO_AR_DATE = 1
+@dot_export@ ZERO_AR_DATE
 endif
 endif
 
@@ -490,9 +491,9 @@ update-smart-drivedb.1m: update-smart-drivedb.8
 
 # Convert man pages into .html, .pdf and .txt
 MAN2HTML = man2html
-#MAN2HTML = $(set_source_date_epoch) groff -man -Thtml
-MAN2PDF = $(set_source_date_epoch) man -Tpdf -l
-#MAN2PDF = $(set_source_date_epoch) groff -man -Tpdf
+#MAN2HTML = groff -man -Thtml
+MAN2PDF = man -Tpdf -l
+#MAN2PDF = groff -man -Tpdf
 
 # Remove HTTP header and timestamp and fix links in man2html output
 FIXHTML = sed -e '1s,^Content-type.*,,' \

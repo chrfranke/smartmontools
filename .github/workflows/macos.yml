@@ -30,8 +30,9 @@ jobs:
       - name: Build (multiarch)
         run: |
           mkdir build && cd build &&
-          export SOURCE_DATE_EPOCH=$((SMARTMONTOOLS_GIT_REV_EPOCH + 1)) &&
-          ../configure --with-build-info='(GHA/macOS)'  'CFLAGS=-arch arm64 -arch x86_64' 'CXXFLAGS=-arch arm64 -arch x86_64' &&
+          ../configure --with-build-info='(GHA/macOS)' \
+            CFLAGS=-'arch arm64 -arch x86_64' CXXFLAGS='-arch arm64 -arch x86_64' \
+            SOURCE_DATE_EPOCH=$((SMARTMONTOOLS_GIT_REV_EPOCH + 1)) &&
           make -j && make check &&
           make bin-dist bin_distfile="smartmontools-macos-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz"
 
