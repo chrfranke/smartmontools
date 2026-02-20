@@ -84,6 +84,9 @@ if test -n "$SOURCE_DATE_EPOCH"; then
   # SOURCE_DATE_EPOCH must be either unset or numeric.
   test -z "`echo "$SOURCE_DATE_EPOCH" | sed -e 's,^$,X,' -e 's,[[0-9]],,g'`" \
   || AC_MSG_ERROR([Malformed SOURCE_DATE_EPOCH: '$SOURCE_DATE_EPOCH'])
+
+  AC_DEFINE_UNQUOTED(SOURCE_DATE_EPOCH, $SOURCE_DATE_EPOCH, [Reproducible build timestamp])
+
   # There are no portable 'date' or 'touch' options accepting SOURCE_DATE_EPOCH
   # (GNU: '-d @$SOURCE_DATE_EPOCH', BSD: '-r $SOURCE_DATE_EPOCH', POSIX: unsupported).
   # Try conversion to ISO format with GNU or BSD 'date'.  Use portable
