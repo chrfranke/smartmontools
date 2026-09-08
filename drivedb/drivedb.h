@@ -68,7 +68,7 @@
 /*
 const drive_settings builtin_knowndrives[] = {
  */
-  { "VERSION: 7.5",
+  { "VERSION: 8.0",
     "-", "-",
     "Version information",
     ""
