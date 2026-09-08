@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # smartmontools drive database update script
 #
@@ -291,7 +291,7 @@ check_file()
 selectkey()
 {
   case $1 in
-    7.[0235])
+    7.[0235]|8.0)
 # Smartmontools DriveDB Key (through 2030) <smartmontools-support@listi.jpberlin.de>
 # Smartmontools Signing Key (through 2025) <smartmontools-database@listi.jpberlin.de>
 # Smartmontools Signing Key (through 2020) <smartmontools-database@listi.jpberlin.de>
@@ -573,7 +573,7 @@ while true; do case $1 in
     check_optarg "$@"; shift
     branch=$1
     case $branch in
-      5.4[0-3]|6.[0-6]|7.[0235]) ;;
+      7.[0235]|8.0) ;;
       *) error "invalid branch '$branch'" ;;
     esac ;;
 
@@ -632,8 +632,8 @@ case "${url_of:+url_of}${url:+url}${file:+file}" in
       */main/*|*rev=main*)
         if [ -z "$main" ]; then
           url=$(echo "$url" | sed -e "s,/main/,/drivedb/$branch/," \
-                                 -e "s,rev=main,rev=drivedb/$branch,")
-          case $branch in [567].*)
+                                  -e "s,rev=main,rev=drivedb/$branch,")
+          case $branch in 7.*)
             url=$(echo "$url" | sed -e 's,/drivedb/drivedb\.h,/smartmontools/drivedb.h,') ;;
           esac
         elif [ -z "$no_verify" ]; then
@@ -641,9 +641,13 @@ case "${url_of:+url_of}${url:+url}${file:+file}" in
         fi
         ;;
       */trunk/*)
+        case $branch in
+          7.*) ;;
+          *) error "branch $branch is not supported with '-u svn'" ;;
+        esac
         test -z "$main" || error "'--main' is not supported with '-u svn'"
         url=$(echo "$url" | sed -e "s,/trunk/,/branches/RELEASE_${branch}_DRIVEDB/," \
-                               -e 's,_\([0-9]*\)\.\([0-9]*\)_,_\1_\2_,');;
+                                -e 's,_\([0-9]*\)\.\([0-9]*\)_,_\1_\2_,');;
       *) error "$url: invalid URL (internal)" ;;
     esac ;;
   url)
@@ -660,7 +664,7 @@ url_asc=
 if [ -z "$no_verify" ]; then
   if [ -n "$url" ]; then
     case $branch in
-      [567].*) raw=".raw" ;;
+      7.*) raw=".raw" ;;
       *) raw= ;;
     esac
     case $url in

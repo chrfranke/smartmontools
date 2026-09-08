@@ -274,7 +274,7 @@ function check_file($file, $firstchar, $minsize, $maxsize)
 function selectkey($branch, [ref]$key)
 {
   switch -RegEx ($branch) {
-    '^7\.[0235]$' {
+    '^7\.[0235]|8\.0$' {
 # Smartmontools DriveDB Key (through 2030) <smartmontools-support@listi.jpberlin.de>
 # Smartmontools Signing Key (through 2025) <smartmontools-database@listi.jpberlin.de>
 # Smartmontools Signing Key (through 2020) <smartmontools-database@listi.jpberlin.de>
@@ -523,7 +523,7 @@ if (!$Smartctl) {
 }
 
 if ($Branch) {
-  if (!($Branch -match '^5\.4[0-3]|6\.[0-6]|7\.[0235]$')) {
+  if (!($Branch -match '^7\.[0235]|8\.0$')) {
     error "invalid branch '${Branch}'"
   }
 } else {
@@ -552,13 +552,16 @@ if (!$Url -and !$File) {
     if (!$Main) {
       $Url = $Url -replace "/main/","/drivedb/$Branch/" `
                   -replace "rev=main","rev=drivedb/$Branch"
-      if ($Branch -match '^[567]\.') {
+      if ($Branch -match '^7\.') {
         $Url = $Url -replace '/drivedb/drivedb\.h','/smartmontools/drivedb.h'
       }
     } elseif (!$NoVerify) {
       error "'-Main' requires '-NoVerify'"
     }
   } elseif ($Url -match '/trunk/') {
+    if (!($Branch -match '^7\.')) {
+      error "branch $Branch is not supported with '-UrlOf svn'"
+    }
     if ($Main) {
       error "'-Main' is not supported with '-UrlOf svn'"
     }
