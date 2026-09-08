@@ -8,7 +8,7 @@ AM_INIT_AUTOMAKE([1.13 foreign subdir-objects tar-ustar])
 LT_INIT([disable_shared])
 
 # Version of drive database branch
-smartmontools_drivedb_version=7.5
+smartmontools_drivedb_version=8.0
 
 # Set by 'do_release' script, commented out when release number is bumped.
 smartmontools_release_date= # 2025-04-30
