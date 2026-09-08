@@ -68,7 +68,7 @@
 /*
 const drive_settings builtin_knowndrives[] = {
  */
-  { "VERSION: 8.0",
+  { "VERSION: 8.0/6277 2026-09-01 16:20:03 +0000 5e6cb183947e",
     "-", "-",
     "Version information",
     ""
