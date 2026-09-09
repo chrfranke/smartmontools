@@ -5638,6 +5638,8 @@ const drive_settings builtin_knowndrives[] = {
       // WD Blue SA510 2.5 4TB/530309WD,  WD Blue SA510 M.2 2280 1000GB/52048100,
       // WD Red SA500 2.5 4TB/540400WD,
       // WD Red SA500 2.5 4TB/540500WD (printed label: WDS400T2R0A-68CKB0)
+    "MILAN II ((256|512)G|[12]T)B|" // tested with
+      // MILAN II 1TB/X6105100 (WD My Passport SSD, 0x1058:0x25f3)
     "SanDisk (Extreme )?Portable SSD|" // tested with SanDisk Portable SSD/UM5004RL
       // (SanDisk SDSSDE30-2T00, 0x0781:0x55b0),
       // SanDisk Extreme Portable SSD/415000RL (SanDisk SDSSDE60-1T00-G25, 0x0781:0x558c)
