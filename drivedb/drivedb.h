@@ -1842,18 +1842,19 @@ const drive_settings builtin_knowndrives[] = {
     "INTEL SSDSC(1N|[12]B)[ABGPX]((080|100|120|150|160|200|240|300|400|480|600|800)[GH][3467][CERT]?|(012|016)T[46])|"
       // A = S3700, B*4 = S3500, B*6 = S3510, P = 730, X = S3610
       // Dell ships drives with model of the form SSDSC2BB120G4R
-    "VK000(120|240|480)GWSXF", // tested with VK000480GWSXF/HPG2 (HPE INTEL SSDSC2BB480G4)
+    "VK000(120|240|480)G(WSXF|XNZA)", // tested with VK000480GWSXF/HPG2 (HPe INTEL SSDSC2BB480G4),
+      // VK000480GXNZA/HPG1 (HPe)
     "", "",
   //"-v 3,raw16(avg16),Spin_Up_Time "
   //"-v 4,raw48,Start_Stop_Count "
   //"-v 5,raw16(raw16),Reallocated_Sector_Ct "
   //"-v 9,raw24(raw8),Power_On_Hours "
-    "-v 11,raw48,Unknown_Intel_Attribute " // VK000480GWSXF
+    "-v 11,raw48,Unknown_Intel_Attribute " // VK*
   //"-v 12,raw48,Power_Cycle_Count "
     "-v 170,raw48,Available_Reservd_Space "
     "-v 171,raw48,Program_Fail_Count "
     "-v 172,raw48,Erase_Fail_Count "
-    "-v 173,raw48,Unknown_Intel_Attribute " // VK000480GWSXF
+    "-v 173,raw48,Percent_Lifetime_Remain " // 100 - "Percentage Used Endurance Indicator", VK*
     "-v 174,raw48,Unsafe_Shutdown_Count "
     "-v 175,raw16(raw16),Power_Loss_Cap_Test "
     "-v 183,raw48,SATA_Downshift_Count "
