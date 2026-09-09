@@ -6629,9 +6629,9 @@ const drive_settings builtin_knowndrives[] = {
     "",
     "-d usbsunplus"
   },
-  { "USB: Freecom; ", // Intel labeled
-    "0x07ab:0xfc8f",
-    "", // 0x0000
+  { "USB: Freecom; ",
+    "0x07ab:0xfc(8f|a6)", // 0xfc8f (0x0000): Intel labeled,
+    "", // 0xfca6 (0x0100): Freecom mHDD Desktop
     "",
     "-d sat"
   },
