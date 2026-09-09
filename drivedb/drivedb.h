@@ -4,7 +4,7 @@
  * Home page of code is: https://www.smartmontools.org
  *
  * Copyright (C) 2003-11 Philip Williams, Bruce Allen
- * Copyright (C) 2008-25 Christian Franke
+ * Copyright (C) 2008-26 Christian Franke
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
@@ -68,7 +68,7 @@
 /*
 const drive_settings builtin_knowndrives[] = {
  */
-  { "VERSION: 8.0/6277 2026-09-01 16:20:03 +0000 5e6cb183947e",
+  { "VERSION: 8.0/6293 2026-09-09 11:17:15 +0000 76e88dac82ba",
     "-", "-",
     "Version information",
     ""
@@ -1842,18 +1842,19 @@ const drive_settings builtin_knowndrives[] = {
     "INTEL SSDSC(1N|[12]B)[ABGPX]((080|100|120|150|160|200|240|300|400|480|600|800)[GH][3467][CERT]?|(012|016)T[46])|"
       // A = S3700, B*4 = S3500, B*6 = S3510, P = 730, X = S3610
       // Dell ships drives with model of the form SSDSC2BB120G4R
-    "VK000(120|240|480)GWSXF", // tested with VK000480GWSXF/HPG2 (HPE INTEL SSDSC2BB480G4)
+    "VK000(120|240|480)G(WSXF|XNZA)", // tested with VK000480GWSXF/HPG2 (HPe INTEL SSDSC2BB480G4),
+      // VK000480GXNZA/HPG1 (HPe)
     "", "",
   //"-v 3,raw16(avg16),Spin_Up_Time "
   //"-v 4,raw48,Start_Stop_Count "
   //"-v 5,raw16(raw16),Reallocated_Sector_Ct "
   //"-v 9,raw24(raw8),Power_On_Hours "
-    "-v 11,raw48,Unknown_Intel_Attribute " // VK000480GWSXF
+    "-v 11,raw48,Unknown_Intel_Attribute " // VK*
   //"-v 12,raw48,Power_Cycle_Count "
     "-v 170,raw48,Available_Reservd_Space "
     "-v 171,raw48,Program_Fail_Count "
     "-v 172,raw48,Erase_Fail_Count "
-    "-v 173,raw48,Unknown_Intel_Attribute " // VK000480GWSXF
+    "-v 173,raw48,Percent_Lifetime_Remain " // 100 - "Percentage Used Endurance Indicator", VK*
     "-v 174,raw48,Unsafe_Shutdown_Count "
     "-v 175,raw16(raw16),Power_Loss_Cap_Test "
     "-v 183,raw48,SATA_Downshift_Count "
@@ -2719,7 +2720,8 @@ const drive_settings builtin_knowndrives[] = {
     "KSM512|" // KingSpec, tested with KSM512/S0509A0
     "LDLC|" // tested with LDLC/KFS03005
     "M\\.2 SSD (128|256|512)GB|" // tested with M.2 SSD 512GB/2109XKR (attributes 241/242: not 32MiB)
-    "Netac MobileDataStar|" // tested with Netac MobileDataStar/HPS2227I (0x0dd8:0x0562)
+    "Netac (MobileDataStar|SSD (120|240|480|960)GB)|" // tested with
+      // Netac MobileDataStar/HPS2227I (0x0dd8:0x0562), Netac SSD 480GB/HP5310B3 (Netac N535S)
     "ORICO|" // ORICO S500PRO, tested with ORICO/W0201A0 (2TB)
     "ORTIAL SSD|" // tested with ORTIAL SSD/U0202A0 (128GB)
     "P3-(128|256|512|[124]TB)|" // Kingspec P3, tested with P3-256/U0329A0 (attributes 241/242: not 32MiB)
@@ -2741,7 +2743,7 @@ const drive_settings builtin_knowndrives[] = {
        // may also exist with different controllers (tickets #1626, #1629, #1774, #1930, GH issues/185),
     "Vi550 S3", // another variant (ticket #1899), tested with Vi550 S3/HP3418C5
     "2109XKR|"
-    "HP(3418C5|3C09BA|S2227I)|KFS03005|P0510E|P0725A|Q(0627|1107)A0|R(0529A|0817B0)|"
+    "HP(3418C5|3C09BA|5310B3|S2227I)|KFS03005|P0510E|P0725A|Q(0627|1107)A0|R(0529A|0817B0)|"
     "S(0222|0424|0509|0618|1211|1230)A0|S112[78]B0|T0(311|519|910)A0|"
     "U((0202|03[02]9|0401|0506|1124|1209)A|0302B)0|V0((414|609|823)A|(303|718)B)0|V1(027|102)A0|VE0R6327|"
     "W((0201|0413|0714|0825)A|(0419|0814|1025)B)0|Y0(106A|307B)0|SHY09A0",
@@ -5637,6 +5639,8 @@ const drive_settings builtin_knowndrives[] = {
       // WD Blue SA510 2.5 4TB/530309WD,  WD Blue SA510 M.2 2280 1000GB/52048100,
       // WD Red SA500 2.5 4TB/540400WD,
       // WD Red SA500 2.5 4TB/540500WD (printed label: WDS400T2R0A-68CKB0)
+    "MILAN II ((256|512)G|[12]T)B|" // tested with
+      // MILAN II 1TB/X6105100 (WD My Passport SSD, 0x1058:0x25f3)
     "SanDisk (Extreme )?Portable SSD|" // tested with SanDisk Portable SSD/UM5004RL
       // (SanDisk SDSSDE30-2T00, 0x0781:0x55b0),
       // SanDisk Extreme Portable SSD/415000RL (SanDisk SDSSDE60-1T00-G25, 0x0781:0x558c)
@@ -6628,9 +6632,9 @@ const drive_settings builtin_knowndrives[] = {
     "",
     "-d usbsunplus"
   },
-  { "USB: Freecom; ", // Intel labeled
-    "0x07ab:0xfc8f",
-    "", // 0x0000
+  { "USB: Freecom; ",
+    "0x07ab:0xfc(8f|a6)", // 0xfc8f (0x0000): Intel labeled,
+    "", // 0xfca6 (0x0100): Freecom mHDD Desktop
     "",
     "-d sat"
   },
@@ -7033,6 +7037,13 @@ const drive_settings builtin_knowndrives[] = {
     "",
     "-d sntasmedia" // limited info only
   },
+  // StarTech
+  { "USB: StarTech 1USB4-NVME-ENCLOSURE; ASMedia ASM2464PD", // USB3->PCIe (NVMe)
+    "0x14b0:0x020b",
+    "",
+    "",
+    "-d sntasmedia"
+  },
   // Super Top
   { "USB: Super Top generic enclosure; ",
     "0x14cd:0x6116",
@@ -7091,10 +7102,10 @@ const drive_settings builtin_knowndrives[] = {
     "-d sat"
   },
   { "USB: ; JMicron JMS581", // USB->SATA+PCIe (NVMe)
-    "0x152d:0x0581",
-    "", // 0x4204
+    "0x152d:0x0581", // 0x0581 (0x4204), 0x0581 (0x8204): ICY BOX IB-2915
     "",
-    "-d sntjmicron/sat"
+    "",
+    "-d sat/sntjmicron" // '-d sntjmicron/sat' may hang until 'NVMe Identify Controller' times out
   },
   { "USB: ; JMicron",
     "0x152d:0x0583", // USB->SATA adapter using default id of JMS583 (see below)
