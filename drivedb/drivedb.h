@@ -2719,7 +2719,8 @@ const drive_settings builtin_knowndrives[] = {
     "KSM512|" // KingSpec, tested with KSM512/S0509A0
     "LDLC|" // tested with LDLC/KFS03005
     "M\\.2 SSD (128|256|512)GB|" // tested with M.2 SSD 512GB/2109XKR (attributes 241/242: not 32MiB)
-    "Netac MobileDataStar|" // tested with Netac MobileDataStar/HPS2227I (0x0dd8:0x0562)
+    "Netac (MobileDataStar|SSD (120|240|480|960)GB)|" // tested with
+      // Netac MobileDataStar/HPS2227I (0x0dd8:0x0562), Netac SSD 480GB/HP5310B3 (Netac N535S)
     "ORICO|" // ORICO S500PRO, tested with ORICO/W0201A0 (2TB)
     "ORTIAL SSD|" // tested with ORTIAL SSD/U0202A0 (128GB)
     "P3-(128|256|512|[124]TB)|" // Kingspec P3, tested with P3-256/U0329A0 (attributes 241/242: not 32MiB)
@@ -2741,7 +2742,7 @@ const drive_settings builtin_knowndrives[] = {
        // may also exist with different controllers (tickets #1626, #1629, #1774, #1930, GH issues/185),
     "Vi550 S3", // another variant (ticket #1899), tested with Vi550 S3/HP3418C5
     "2109XKR|"
-    "HP(3418C5|3C09BA|S2227I)|KFS03005|P0510E|P0725A|Q(0627|1107)A0|R(0529A|0817B0)|"
+    "HP(3418C5|3C09BA|5310B3|S2227I)|KFS03005|P0510E|P0725A|Q(0627|1107)A0|R(0529A|0817B0)|"
     "S(0222|0424|0509|0618|1211|1230)A0|S112[78]B0|T0(311|519|910)A0|"
     "U((0202|03[02]9|0401|0506|1124|1209)A|0302B)0|V0((414|609|823)A|(303|718)B)0|V1(027|102)A0|VE0R6327|"
     "W((0201|0413|0714|0825)A|(0419|0814|1025)B)0|Y0(106A|307B)0|SHY09A0",
