@@ -4,7 +4,7 @@
  * Home page of code is: https://www.smartmontools.org
  *
  * Copyright (C) 2003-11 Philip Williams, Bruce Allen
- * Copyright (C) 2008-25 Christian Franke
+ * Copyright (C) 2008-26 Christian Franke
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
@@ -7091,10 +7091,10 @@ const drive_settings builtin_knowndrives[] = {
     "-d sat"
   },
   { "USB: ; JMicron JMS581", // USB->SATA+PCIe (NVMe)
-    "0x152d:0x0581",
-    "", // 0x4204
+    "0x152d:0x0581", // 0x0581 (0x4204), 0x0581 (0x8204): ICY BOX IB-2915
     "",
-    "-d sntjmicron/sat"
+    "",
+    "-d sat/sntjmicron" // '-d sntjmicron/sat' may hang until 'NVMe Identify Controller' times out
   },
   { "USB: ; JMicron",
     "0x152d:0x0583", // USB->SATA adapter using default id of JMS583 (see below)
