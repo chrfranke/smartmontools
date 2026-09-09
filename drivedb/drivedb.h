@@ -7033,6 +7033,13 @@ const drive_settings builtin_knowndrives[] = {
     "",
     "-d sntasmedia" // limited info only
   },
+  // StarTech
+  { "USB: StarTech 1USB4-NVME-ENCLOSURE; ASMedia ASM2464PD", // USB3->PCIe (NVMe)
+    "0x14b0:0x020b",
+    "",
+    "",
+    "-d sntasmedia"
+  },
   // Super Top
   { "USB: Super Top generic enclosure; ",
     "0x14cd:0x6116",
