@@ -2712,7 +2712,7 @@ static int SCSIDeviceScan(dev_config & cfg, dev_state & state, scsi_device * scs
   struct scsi_iec_mode_page iec;
   uint8_t  tBuf[64];
   uint8_t  inqBuf[96];
-  uint8_t  vpdBuf[252];
+  uint8_t  vpdBuf[264];
   char lu_id[64], serial[256], vendor[40], model[40];
 
   // Device must be open
