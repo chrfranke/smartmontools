@@ -24,6 +24,15 @@
 
 namespace smartmon {
 
+// Return true if '-T permissive' is specified.
+static bool is_permissive()
+{
+  if (!failuretest_permissive)
+    return false;
+  failuretest_permissive--;
+  return true;
+}
+
 // SNT (SCSI NVMe Translation) namespace and prefix
 namespace snt {
 
@@ -237,19 +246,42 @@ bool sntjmicron_device::nvme_pass_through(const nvme_cmd_in & in, nvme_cmd_out &
   /* Only admin commands used */
   constexpr bool admin = true;
 
+  // Get Log causes controller to hang or return bogus data if size > 0x0200
+  // (see also GH issues #256 and #648).  Truncate known logs and reject other logs.
+  // Allow override with '-T permissive'.
+  unsigned size = in.size;
+  unsigned log_size = size;
+  unsigned cdw10 = in.cdw10;
+  constexpr unsigned max_log_size = 0x0200;
+  if (in.opcode == nvme_admin_get_log_page && size > max_log_size && !is_permissive()) {
+    const char * warnmsg;
+    const char * ovrmsg = (nvme_debugmode ? " (override with '-T permissive' option)" : "");
+    unsigned lid = cdw10 & 0xff;
+    if (lid == 0x01) {
+      constexpr unsigned sz = 8 * sizeof(nvme_error_log_page);
+      SMARTMON_STATIC_ASSERT(sz == max_log_size);
+      log_size = sz;
+      warnmsg = "Error Information truncated to 8 entries";
+    }
+    else if (lid == 0x06) {
+      constexpr unsigned sz = sizeof(nvme_self_test_log) - (20 - 18) * sizeof(nvme_self_test_result);
+      SMARTMON_STATIC_ASSERT(sz == 0x01fc && sz < max_log_size);
+      log_size = sz;
+      warnmsg = "Self-test Log truncated to 18 entries";
+    }
+    else {
+      return set_err(ENOSYS, "NVMe Get Log Page with LID=0x%02x and size=0x%04x not supported%s",
+                     lid, size, ovrmsg);
+    }
+    size = max_log_size;
+    cdw10 = lid | (((size / 4) - 1) << 16);
+    if (nvme_debugmode)
+      lib_printf(" [Changed: size=0x%04x, cdw10=0x%08x]\n", size, cdw10);
+    lib_printf("Warning: %s to prevent device reset%s\n", warnmsg, ovrmsg);
+  }
+
   // 1: "NVM Command Set Payload"
   {
-  // for whatever reason selftest log causing controller to hang if size is set > 0x230b
-  // see GH issue #256 for the details. Patching it to include last 19 log records instead
-    unsigned cdw10 = in.cdw10;
-    if (in.opcode == nvme_admin_get_log_page) {
-      unsigned int lid = in.cdw10 & 0xFF;
-      if (lid == 0x6 && in.size > 0x218) {
-        unsigned size = 0x218;
-        cdw10 = lid | ((size/4 - 1) << 16);
-        lib_printf("Warning: self-test output truncated to 19 items to workaround controller bug\n");
-      }
-    }
     unsigned char cdb[SNT_JMICRON_CDB_LEN] = { 0 };
     cdb[0] = SAT_ATA_PASSTHROUGH_12;
     cdb[1] = (admin ? 0x80 : 0x00) | proto_nvm_cmd;
@@ -304,17 +336,17 @@ bool sntjmicron_device::nvme_pass_through(const nvme_cmd_in & in, nvme_cmd_out &
         break;
       case nvme_cmd_in::data_out:
         cdb[1] = (admin ? 0x80 : 0x00) | proto_dma_out;
-        sg_put_unaligned_be24(in.size, &cdb[3]);
+        sg_put_unaligned_be24(size, &cdb[3]);
         io_data.dxfer_dir = DXFER_TO_DEVICE;
         io_data.dxferp = (uint8_t *)in.buffer;
-        io_data.dxfer_len = in.size;
+        io_data.dxfer_len = size;
         break;
       case nvme_cmd_in::data_in:
         cdb[1] = (admin ? 0x80 : 0x00) | proto_dma_in;
-        sg_put_unaligned_be24(in.size, &cdb[3]);
+        sg_put_unaligned_be24(size, &cdb[3]);
         io_data.dxfer_dir = DXFER_FROM_DEVICE;
         io_data.dxferp = (uint8_t *)in.buffer;
-        io_data.dxfer_len = in.size;
+        io_data.dxfer_len = size;
         memset(in.buffer, 0, in.size);
         break;
       case nvme_cmd_in::data_io:
@@ -326,6 +358,10 @@ bool sntjmicron_device::nvme_pass_through(const nvme_cmd_in & in, nvme_cmd_out &
     if (!scsidev->scsi_pass_through_and_check(&io_data,
          "sntjmicron_device::nvme_pass_through:Data: "))
       return set_err(scsidev->get_err());
+
+    if (in.direction() == nvme_cmd_in::data_in && log_size < size)
+      // Clear truncated log entry
+      memset(reinterpret_cast<uint8_t *>(in.buffer) + log_size, 0, size - log_size);
   }
 
   // 3: "Return Response Information"
