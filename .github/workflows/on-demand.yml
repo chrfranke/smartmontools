@@ -12,8 +12,17 @@ on:
       builds-2:
         description: >-
           Extra builds:
-          netbsd-x86_64 openbsd-x86_64 omnios-x86_64 os2emx
+          freebsd-x86_64 netbsd-x86_64 openbsd-x86_64 omnios-x86_64 os2emx
           windows-signed windows-test-signed
+        default: ''
+        type: string
+      builds-3:
+        description: >-
+          Emulated builds (BE: powerpc64, s390x, sparc64):
+          freebsd-(aarch64|riscv64|powerpc64)
+          netbsd-(aarch64|riscv64|sparc64)
+          openbsd-(aarch64|riscv64|sparc64)
+          ubuntu-(ppc64le|riscv64|s390x)
         default: ''
         type: string
       configure-override:
@@ -56,11 +65,15 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       builds: >-
-        ${{ inputs.builds-1 }} ${{ inputs.builds-2 }}
-      configure-override: ${{ inputs.configure-override }}
-      make-override: ${{ inputs.make-override }}
-      run-checks:  ${{ inputs.run-checks }}
-      retention-days: ${{ case(inputs.publish == 'yes', 1, 90) }}
+        ${{ inputs.builds-1 }} ${{ inputs.builds-2 }} ${{ inputs.builds-3 }}
+      configure-override: >-
+        ${{ inputs.configure-override }}
+      make-override: >-
+        ${{ inputs.make-override }}
+      run-checks: >-
+        ${{ inputs.run-checks }}
+      retention-days: >-
+        ${{ case(inputs.publish == 'yes', 1, 90) }}
     secrets: inherit
 
   upload-all:

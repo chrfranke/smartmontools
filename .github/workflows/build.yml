@@ -24,15 +24,39 @@ on:
 jobs:
   source-tarball:
     runs-on: ubuntu-latest
+    outputs:
+      freebsd-q-matrix: ${{ steps.init.outputs.freebsd-q-matrix }}
+      netbsd-q-matrix: ${{ steps.init.outputs.netbsd-q-matrix }}
+      openbsd-q-matrix: ${{ steps.init.outputs.openbsd-q-matrix }}
+      ubuntu-q-matrix: ${{ steps.init.outputs.ubuntu-q-matrix }}
 
     steps:
-      - name: Show parameters
+      - name: Show inputs and init variables
+        id: init
         run: |
           echo "::notice::builds: '${{ inputs.builds }}'" \
                "configure-override: '${{ inputs.configure-override }}'" \
                "make-override: '${{ inputs.make-override }}'" \
                "run-checks: '${{ inputs.run-checks }}'" \
                "retention-days: '${{ inputs.retention-days }}'"
+          for os in freebsd netbsd openbsd ubuntu; do
+            printf '%s-q-matrix={"arch":[' "$os" >> $GITHUB_OUTPUT
+            d=
+            for arch in x86_64 aarch64 riscv64 powerpc64 ppc64le s390x sparc64; do
+              build="$os-$arch"
+              case $build in
+                *bsd-x86_64|*bsd-aarch64|*-riscv64) ;;
+                freebsd-powerpc64|netbsd-sparc64|openbsd-sparc64) ;;
+                ubuntu-ppc64le|ubuntu-s390x) ;;
+                *) continue ;;
+              esac
+              case ' ${{ inputs.builds }} ' in
+                *\ $build\ *) printf '%s"%s"%s' "$d" "$arch" >> $GITHUB_OUTPUT; d=',' ;;
+              esac
+            done
+            echo ']}' >> $GITHUB_OUTPUT
+          done
+          cat $GITHUB_OUTPUT
 
       - uses: actions/checkout@v6
         with:
@@ -239,9 +263,49 @@ jobs:
           if-no-files-found: error
           retention-days: ${{ inputs.retention-days }}
 
-  netbsd-x86_64:
-    if: ${{ contains(format(' {0} ', inputs.builds), ' netbsd-x86_64 ') }}
+  freebsd-q:
+    if: ${{ ! contains(needs.source-tarball.outputs.freebsd-q-matrix, '[]') }}
     needs: source-tarball
+    strategy:
+      matrix: ${{ fromJSON(needs.source-tarball.outputs.freebsd-q-matrix) }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: smartmontools-src
+          path: source
+
+      - name: Build and Run (QEMU)
+        uses: vmactions/freebsd-vm@v1
+        with:
+          arch: ${{ matrix.arch }}
+          usesh: true
+          run: | # SOURCE_DATE_EPOCH not used because GNU tar is not installed by default
+            uname -a && ver=$(uname -r) && ver=${ver%%.*} &&
+            tar -xf source/smartmontools-*.*.tar.gz && mv -v smartmontools-*.*/ smartmontools &&
+            mkdir smartmontools/build && cd smartmontools/build &&
+            version_sh=$(../util/getversion.sh -s) && eval "${version_sh}" &&
+            ../configure --with-build-info='(GHA Build)' \
+              ${{ inputs.configure-override }} &&
+            make ${{ inputs.make-override || '-j 4 V=0' }} && make check &&
+            bin_distfile="../../smartmontools-freebsd-$ver-${{ matrix.arch }}-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz" &&
+            make bin_distfile="$bin_distfile" bin-dist && tar -tvf "$bin_distfile" &&
+            echo '$' smartctl --scan &&
+            { src/smartctl --scan || echo "::error::'smartctl --scan' failed"; }
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: smartmontools-freebsd-${{ matrix.arch }}
+          path: smartmontools-freebsd-*-${{ matrix.arch }}-*.*.tar.gz
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}
+
+  netbsd-q:
+    if: ${{ ! contains(needs.source-tarball.outputs.netbsd-q-matrix, '[]') }}
+    needs: source-tarball
+    strategy:
+      matrix: ${{ fromJSON(needs.source-tarball.outputs.netbsd-q-matrix) }}
     runs-on: ubuntu-latest
 
     steps:
@@ -253,6 +317,7 @@ jobs:
       - name: Build and Run (QEMU)
         uses: vmactions/netbsd-vm@v1
         with:
+          arch: ${{ matrix.arch }}
           usesh: true
           run: | # SOURCE_DATE_EPOCH not used because GNU tar is not installed by default
             uname -a && ver=$(uname -r) && ver=${ver%%.*} &&
@@ -262,21 +327,23 @@ jobs:
             ../configure --with-build-info='(GHA Build)' \
               ${{ inputs.configure-override }} &&
             make ${{ inputs.make-override || '-j 4 V=0' }} && make check &&
-            bin_distfile="../../smartmontools-netbsd-$ver-x86_64-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz" &&
+            bin_distfile="../../smartmontools-netbsd-$ver-${{ matrix.arch }}-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz" &&
             make bin_distfile="$bin_distfile" bin-dist && tar -tvf "$bin_distfile" &&
             echo '$' smartctl --scan &&
             { src/smartctl --scan || echo "::error::'smartctl --scan' failed"; }
 
       - uses: actions/upload-artifact@v7
         with:
-          name: smartmontools-netbsd-x86_64
-          path: smartmontools-netbsd-*-x86_64-*.*.tar.gz
+          name: smartmontools-netbsd-${{ matrix.arch }}
+          path: smartmontools-netbsd-*-${{ matrix.arch }}-*.*.tar.gz
           if-no-files-found: error
           retention-days: ${{ inputs.retention-days }}
 
-  openbsd-x86_64:
-    if: ${{ contains(format(' {0} ', inputs.builds), ' openbsd-x86_64 ') }}
+  openbsd-q:
+    if: ${{ ! contains(needs.source-tarball.outputs.openbsd-q-matrix, '[]') }}
     needs: source-tarball
+    strategy:
+      matrix: ${{ fromJSON(needs.source-tarball.outputs.openbsd-q-matrix) }}
     runs-on: ubuntu-latest
 
     steps:
@@ -288,6 +355,7 @@ jobs:
       - name: Build and Run (QEMU)
         uses: vmactions/openbsd-vm@v1
         with:
+          arch: ${{ matrix.arch }}
           usesh: true
           run: | # SOURCE_DATE_EPOCH not used because GNU tar is not installed by default
             uname -a && ver=$(uname -r) && ver=${ver%%.*} &&
@@ -297,15 +365,15 @@ jobs:
             ../configure --with-build-info='(GHA Build)' \
               ${{ inputs.configure-override }} &&
             make ${{ inputs.make-override || '-j 4 V=0' }} && make check &&
-            bin_distfile="../../smartmontools-openbsd-$ver-x86_64-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz" &&
+            bin_distfile="../../smartmontools-openbsd-$ver-${{ matrix.arch }}-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz" &&
             make bin_distfile="$bin_distfile" bin-dist && tar -tvzf "$bin_distfile" &&
             echo '$' smartctl --scan &&
             { src/smartctl --scan || echo "::error::'smartctl --scan' failed"; }
 
       - uses: actions/upload-artifact@v7
         with:
-          name: smartmontools-openbsd-x86_64
-          path: smartmontools-openbsd-*-x86_64-*.*.tar.gz
+          name: smartmontools-openbsd-${{ matrix.arch }}
+          path: smartmontools-openbsd-*-${{ matrix.arch }}-*.*.tar.gz
           if-no-files-found: error
           retention-days: ${{ inputs.retention-days }}
 
@@ -335,7 +403,6 @@ jobs:
             make ${{ inputs.make-override || '-j 4 V=0' }} && make check &&
             bin_distfile="../../smartmontools-omnios-$ver-x86_64-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz" &&
             make bin_distfile="$bin_distfile" bin-dist && tar -tvf "$bin_distfile" &&
-            tar -xf "$bin_distfile" usr/local/sbin/smartctl &&
             echo '$' smartctl --scan &&
             { src/smartctl --scan || echo "::error::'smartctl --scan' failed"; }
 
@@ -343,6 +410,47 @@ jobs:
         with:
           name: smartmontools-omnios-x86_64
           path: smartmontools-omnios-*-x86_64-*.*.tar.gz
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}
+
+  ubuntu-q:
+    if: ${{ ! contains(needs.source-tarball.outputs.ubuntu-q-matrix, '[]') }}
+    needs: source-tarball
+    strategy:
+      matrix: ${{ fromJSON(needs.source-tarball.outputs.ubuntu-q-matrix) }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: smartmontools-src
+          path: source
+
+      - name: Build and Run (QEMU)
+        uses: vmactions/ubuntu-vm@v1
+        with:
+          arch: ${{ matrix.arch }}
+          release: "26.04"
+          prepare: |
+            apt-get update && apt-get install -y g++ make
+          run: |
+            uname -a && ver=$(uname -r) && ver=${ver%%.*} &&
+            tar -xf source/smartmontools-*.*.tar.gz && mv -v smartmontools-*.*/ smartmontools &&
+            mkdir smartmontools/build && cd smartmontools/build &&
+            version_sh=$(../util/getversion.sh -s) && eval "${version_sh}" &&
+            ../configure --with-build-info='(GHA Build)' \
+              ${{ inputs.configure-override }} \
+              SOURCE_DATE_EPOCH=$((SMARTMONTOOLS_GIT_REV_EPOCH + 1)) &&
+            make ${{ inputs.make-override || '-j 4 V=0' }} && make check &&
+            bin_distfile="../../smartmontools-ubuntu-$ver-${{ matrix.arch }}-${SMARTMONTOOLS_GIT_VER_FNAME}.tar.gz" &&
+            make bin_distfile="$bin_distfile" bin-dist && tar -tvf "$bin_distfile" &&
+            echo '$' smartctl --scan &&
+            { src/smartctl --scan || echo "::error::'smartctl --scan' failed"; }
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: smartmontools-ubuntu-${{ matrix.arch }}
+          path: smartmontools-ubuntu-*-${{ matrix.arch }}-*.*.tar.gz
           if-no-files-found: error
           retention-days: ${{ inputs.retention-days }}
 
