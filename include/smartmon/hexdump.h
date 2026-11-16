@@ -18,40 +18,23 @@
 namespace smartmon {
 
 /// Options for 'hexdumper<>' and 'hexdump()'.
-// TODO: add zero initialization to members when C++14 is enabled.
 struct hexdump_options {
-  const char * prefix;     //< Prepend each line with this string.
-  uint64_t offset_min;     //< Start value of offset field.
-  uint64_t offset_max;     //< Max offset to determine field length: 0=none, 1=auto.
-  bool hex_2_columns;      //< Output 16 hex bytes in two 8 byte columns.
-  bool add_ascii;          //< Add "|...ASCII...|" block.
-  uint8_t skip_identical;  //< Skip identical lines: 0=no, 1=nullbytes only, 2=all.
-  bool append_offset;      //< Append next offset after last hex line.
-  bool no_trailing_nl;     //< Do not append '\n' to last line.
-};
+  const char * prefix{};     //< Prepend each line with this string.
+  uint64_t offset_min{};     //< Start value of offset field.
+  uint64_t offset_max{};     //< Max offset to determine field length: 0=none, 1=auto.
+  bool hex_2_columns{};      //< Output 16 hex bytes in two 8 byte columns.
+  bool add_ascii{};          //< Add "|...ASCII...|" block.
+  uint8_t skip_identical{};  //< Skip identical lines: 0=no, 1=nullbytes only, 2=all.
+  bool append_offset{};      //< Append next offset after last hex line.
+  bool no_trailing_nl{};     //< Do not append '\n' to last line.
 
-/// Options for format compatible with 'hexdump --canonical' (see hexdump(1)).
-constexpr hexdump_options hexdump_options_canonical {
-  nullptr,     // prefix
-  0,           // offset_min
-  0xffffffff,  // offset_max
-  true,        // hex_2_columns
-  true,        // add_ascii
-  2,           // skip_identical
-  true,        // append_offset
-  false        // no_trailing_nl
-};
-
-/// Options for format compatible with 'xxd -r'.
-constexpr hexdump_options hexdump_options_xxd_r {
-  nullptr,     // prefix
-  0,           // offset_min
-  0xffffffff,  // offset_max
-  false,       // hex_2_columns
-  true,        // add_ascii
-  1,           // skip_identical
-  false,       // append_offset
-  false        // no_trailing_nl
+  enum format { //< Built-in formats.
+    minimal,    //< All fields unset.
+    canonical,  //< Compatible with 'hexdump --canonical' (see hexdump(1)).
+    xxd_r       //< Compatible with 'xxd -r'.
+  };
+  // No 'explicit' to allow 'options = hexdump_options::FORMAT'
+  hexdump_options(format fmt = minimal);
 };
 
 // Base class for 'hexdumper<>'.

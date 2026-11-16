@@ -40,9 +40,9 @@ int main(int argc, char **argv)
     if (!std::strcmp(argv[ai], "-A"))
       options = {}, options.offset_max = 0xfffffff;
     else if (!std::strcmp(argv[ai], "-C"))
-      options = smartmon::hexdump_options_canonical;
+      options = smartmon::hexdump_options::canonical;
     else if (!std::strcmp(argv[ai], "-R"))
-      options = smartmon::hexdump_options_xxd_r;
+      options = smartmon::hexdump_options::xxd_r;
     else if (!std::strcmp(argv[ai], "-h"))
       return usage(argv[0], 0);
     else

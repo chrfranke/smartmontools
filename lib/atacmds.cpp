@@ -387,7 +387,7 @@ void ata_print_debug_info(const ata_cmd_in & in, const char * devname, bool dump
 
   if (in.direction == ata_cmd_in::data_out && dump) {
     lib_printf("\n");
-    hexdump_options opts = hexdump_options_canonical;
+    hexdump_options opts{hexdump_options::canonical};
     opts.prefix = "  ";
     opts.offset_max = 1;
     hexdump([](const char * str){lib_printf("%s", str);}, in.buffer, in.size, opts);
@@ -414,7 +414,7 @@ void ata_print_debug_info(const ata_cmd_in & in, const ata_cmd_out & out,
       print_regs("\n  Output: ", out.out_regs, in.in_regs.is_48bit_cmd());
     if (in.direction == ata_cmd_in::data_in && dump) {
       lib_printf("\n");
-      hexdump_options opts = hexdump_options_canonical;
+      hexdump_options opts{hexdump_options::canonical};
       opts.prefix = "  ";
       opts.offset_max = 1;
       hexdump([](const char * str){lib_printf("%s", str);}, in.buffer, in.size, opts);

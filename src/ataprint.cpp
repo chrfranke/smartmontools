@@ -1662,7 +1662,7 @@ static void PrintLogPages(const char * type, const unsigned char * data,
 {
   pout("%s Log 0x%02x [%s], Page %u-%u (of %u)\n",
     type, logaddr, GetLogName(logaddr), page, page+num_pages-1, max_pages);
-  hexdump_options opts = hexdump_options_xxd_r;
+  hexdump_options opts{hexdump_options::xxd_r};
   opts.offset_min = page * 512;
   opts.offset_max = 0x10000 * 512;
   hexdump([](const char * str){pout("%s", str);}, data, num_pages * 512, opts);

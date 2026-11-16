@@ -16,6 +16,26 @@
 
 namespace smartmon {
 
+hexdump_options::hexdump_options(format fmt /* = minimal */)
+{
+  switch (fmt) {
+    default: // minimal
+      break;
+    case canonical:
+      offset_max = 0xffffffff;
+      hex_2_columns = true;
+      add_ascii = true;
+      skip_identical = 2; // all
+      append_offset = true;
+      break;
+    case xxd_r:
+      offset_max = 0xffffffff;
+      add_ascii = true;
+      skip_identical = 1; // nullbytes only
+      break;
+  }
+}
+
 hexdumper_base::hexdumper_base(const hexdump_options & options)
 : m_options(options)
 {

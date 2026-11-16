@@ -89,7 +89,7 @@ static bool nvme_pass_through(nvme_device * device, const nvme_cmd_in & in,
       lib_printf(" [NVMe call succeeded: result=0x%08x", out.result);
       if (nvme_debugmode > 1 && in.direction() == nvme_cmd_in::data_in) {
         lib_printf("\n");
-        hexdump_options opts = hexdump_options_canonical;
+        hexdump_options opts{hexdump_options::canonical};
         opts.prefix = "  ";
         opts.offset_max = 1;
         hexdump([](const char * str){lib_printf("%s", str);}, in.buffer, in.size, opts);
